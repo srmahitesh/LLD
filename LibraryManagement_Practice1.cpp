@@ -108,7 +108,7 @@ class Library{
     }
 
     b->decreaseStock();
-    bookDetails[b->getSerialNo()] = b;
+    //bookDetails[b->getSerialNo()] = b;  No need as we are already updating pointers
     cout<<"Book issued successfully"<<endl;
   }
 
@@ -130,7 +130,7 @@ class Library{
     }
 
     b->increaseStock();
-    bookDetails[b->getSerialNo()] = b;
+    //bookDetails[b->getSerialNo()] = b;  No need as we are updating pointers
     cout<<"Book recieved successfully"<<endl;
   }
 };

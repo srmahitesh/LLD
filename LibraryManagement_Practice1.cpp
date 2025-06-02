@@ -1,7 +1,14 @@
-#include <iostream>
-#include <unordered_map>
+#include <bits/stdc++.h>
 using namespace std;
 
+
+/*Requirements:
+  1. User can only issue upto 3 books simuntaneosly. After 3 issued books new can only be after atlease 1 is returned.
+  2. Edge cases must be handled carefully:
+    2.1. No issue is all books already issued.
+    2.2. No book can be returned if all are available in library.
+  3. Proper record must be maintained of available books & issued books.
+*/
 
 class Book{
 
@@ -54,14 +61,18 @@ class Book{
 
 
 
+
+
 class Library{
 
   int serial_no;
   unordered_map<int, Book*> bookDetails;
+  unordered_map<int, unordered_set<int>> issuedBooks; //{roll_no, serial no};
+
 
   public:
   Library(){
-    serial_no = 0; //count, to asign unique id to each new book added
+    serial_no = 0; //count, to asign unique id to each new book added   //change it later to static & private
   }
 
 
@@ -95,7 +106,7 @@ class Library{
 
 
 
-  void issueBook(int serial_no){
+  void issueBook(int serial_no, int roll_no){
     if(bookDetails.find(serial_no) == bookDetails.end()){
       cout<<"Invalid serial number. No such book exists."<<endl;
       return;
@@ -106,16 +117,25 @@ class Library{
       cout<<"No book left in stock. Please try issuing after some days."<<endl;
       return;
     }
+    else if(issuedBooks[roll_no].size() >= 3){
+      cout<<"Maximum Book issued already. Please return atleast 1 before getting new one."<<endl;
+      return;
+    }
+    else if(issuedBooks[roll_no].find(serial_no) != issuedBooks[roll_no].end()){
+      cout<<"You have already taken the same Book."<<endl;
+      return;
+    }
 
+    issuedBooks[roll_no].insert(serial_no);
     b->decreaseStock();
-    //bookDetails[b->getSerialNo()] = b;  No need as we are already updating pointers
+    //bookDetails[b->getSerialNo()] = b;
     cout<<"Book issued successfully"<<endl;
   }
 
 
 
 
-  void returnBook(int serial_no){
+  void returnBook(int serial_no, int roll_no){
 
     if(bookDetails.find(serial_no) == bookDetails.end()){
       cout<<"Invalid serial number. No such book exists."<<endl;
@@ -130,7 +150,8 @@ class Library{
     }
 
     b->increaseStock();
-    //bookDetails[b->getSerialNo()] = b;  No need as we are updating pointers
+    issuedBooks[roll_no].erase(serial_no);
+    //bookDetails[b->getSerialNo()] = b;
     cout<<"Book recieved successfully"<<endl;
   }
 };
@@ -138,19 +159,63 @@ class Library{
 
 
 
+
+class student{
+  static int last_roll_no;
+  int roll_no;
+  string name;
+  
+  public:
+
+  student(string name){
+    this->name = name;
+    roll_no = ++last_roll_no;
+  }
+
+  void availableBooks(Library* &L){
+    L->showAvailableBooks();
+  }
+
+  void issueBook(Library* &L, int serial_no){
+    L->issueBook(serial_no, this->roll_no);
+  }
+
+  void returnBook(Library* &L, int serial_no){
+    L->returnBook(serial_no, this->roll_no);
+  }
+
+};
+
+
+int student:: last_roll_no = 0;
+
+
+
 int main(){
   Library* L = new Library();
   L->showAvailableBooks();
   L->addBook("My Life", "HItesh Sharma", 2);
-  L->showAvailableBooks();
-  L->issueBook(1);
-  L->issueBook(1);
-  L->showAvailableBooks();
-  L->returnBook(1);
-  L->showAvailableBooks();
-  L->returnBook(1);
-  L->returnBook(1);
-  L->returnBook(1);
+  L->addBook("Let's C", "Denis Ritchie", 2);
+  L->addBook("Let's C++", "John Startsup", 2);
+  L->addBook("Rich Dad, Poor Dad", "Robert Kiyosaki", 1);
+
+  student* s1 = new student("Hitesh");
+  student* s2 = new student("Ram");
+  student* s3 = new student("Radha");
+
+  s1->availableBooks(L);
+  s1->issueBook(L, 1); //success
+  s1->issueBook(L, 1); //duplicate book
+  s1->issueBook(L, 2); //success
+  s1->issueBook(L, 3); //success
+  s1->issueBook(L, 4); //limit exhausted
+  s2->issueBook(L, 4); //success
+  s3->issueBook(L, 4);//out of stock
+  s2->returnBook(L, 4); //success
+  s3->issueBook(L, 4); //success this time, as s2 has returned
+
+
 
   return 0;
+
 }
